@@ -10,5 +10,6 @@ COPY requirements.txt /MIS_SAM/
 
 RUN pip install -r requirements.txt
 COPY . /MIS_SAM/
+
 # RUN python3 manage.py makemigrations 
 # RUN python3 manage.py migrate
