@@ -68,13 +68,13 @@ def get_childrens(user, count=1):
     space = ' ' * count
 
 
-    children = AccountsUser.objects.filter(created_by = user)
+    children = AccountsUser.objects.filter(created_by = user,is_active=True)
     if children: print(f"{space}found {len(children)} children for this user {user.user_type}")
 
     rtrn_routes = []
 
     for i, child in enumerate(children):
-        print(child)
+        
 
         print(f"{space}{i} --> gettings routes for child [{child.email} {child.id} {child.user_type}]", end='-               \t')
         routes = AccountsSmppusers.objects.filter(assigned_to = child.id,delete=False)
@@ -106,3 +106,8 @@ def get_childrens_under_user(user, count=1):
         rtrn_routes.extend(get_childrens_under_user(child, count+5))
 
     return rtrn_routes    
+
+
+
+
+
