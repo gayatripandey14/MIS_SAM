@@ -108,7 +108,7 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_NAME_MIS',"celetelmissam"),
         'USER': os.environ.get('POSTGRES_USER_MIS',"postgres"),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD_MIS',"admin"),
-        'HOST': 'missamdb.celetel.com',
+        'HOST': 'misdb.celetel.com',
         'PORT': 5432,
     },
 

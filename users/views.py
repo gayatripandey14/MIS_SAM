@@ -251,12 +251,7 @@ class DashBoardView(GenericAPIView):
                               in_=openapi.IN_QUERY,
                               type=openapi.TYPE_STRING,
                               description=' ',
-                              required=False),
-                    openapi.Parameter(name='chart_filter',
-                              in_=openapi.IN_QUERY,
-                              type=openapi.TYPE_STRING,
-                              description=' ',
-                              required=False),          
+                              required=False),        
                     openapi.Parameter(name='Initial_date',
                               in_=openapi.IN_QUERY,
                               type=openapi.TYPE_STRING,
@@ -271,7 +266,6 @@ class DashBoardView(GenericAPIView):
     @swagger_auto_schema(manual_parameters = custom_param)
     def get(self,request):
         filter = request.GET.get('filter',None)
-        chart_filter = request.GET.get('chart_filter',None)
         query = request.GET.get('query',None)
         Initial_date = request.GET.get('Initial_date',None)
         Final_date = request.GET.get('Final_date',None)
@@ -287,15 +281,16 @@ class DashBoardView(GenericAPIView):
                 end_date = end_date.strftime("%Y-%m-%d")
                 undelivered_count = 0
                 delivered_count = 0
-
+                submission_count = 0
                 all = fetch_dlr_count(start_date,end_date)
                 for i in all:
                     undelivered_count = undelivered_count+i['undelivered_count']
                     delivered_count = delivered_count+i['delivered_count']
                     submission_count = submission_count+i['submission_count']
                 if submission_count == 0:
-                    pass
-                successrate = delivered_count/submission_count * 100
+                    successrate = 0
+                else:
+                    successrate = delivered_count/submission_count * 100
                 count_dict = {"system_id":system_id,'route':route,
                             'undelivered_count':undelivered_count,
                             'delivered_count':delivered_count,
@@ -319,7 +314,8 @@ class DashBoardView(GenericAPIView):
                     delivered_count = delivered_count+i['delivered_count']
                     submission_count = submission_count+i['submission_count']
                 if submission_count == 0:
-                    pass
+                    successrate = 0
+
                 successrate = delivered_count/submission_count * 100
                 count_dict = {"system_id":system_id,'route':route,
                             'undelivered_count':undelivered_count,
@@ -345,7 +341,8 @@ class DashBoardView(GenericAPIView):
                     delivered_count = delivered_count+i['delivered_count']
                     submission_count = submission_count+i['submission_count']
                 if submission_count == 0:
-                    pass
+                    successrate = 0
+
                 successrate = delivered_count/submission_count * 100
                 count_dict = {"system_id":system_id,'route':route,
                             'undelivered_count':undelivered_count,
@@ -355,9 +352,9 @@ class DashBoardView(GenericAPIView):
                 
                 return Response(count_dict)    
         if query == 'AnalyticsData':
-            if chart_filter.startswith('messages_days'):
+            if filter.startswith('messages_days'):
 
-                days = int(chart_filter.replace('messages_days', ''))  
+                days = int(filter.replace('messages_days', ''))  
                 start_date = datetime.datetime.now() + datetime.timedelta(days=1)
                 end_date =datetime.datetime.now() - datetime.timedelta(days=days)
                
@@ -378,9 +375,9 @@ class DashBoardView(GenericAPIView):
                     } )
                 return Response(rtrn_list)    
 
-            if chart_filter.startswith('messages_month'):
+            if filter.startswith('messages_month'):
 
-                months = int(chart_filter.replace('messages_month', ''))  
+                months = int(filter.replace('messages_month', ''))  
                 start_date = datetime.datetime.now() 
                 end_date =datetime.datetime.now() - datetime.timedelta(days=months*30)
                 start_date = start_date.strftime("%Y-%m-%d")
@@ -408,7 +405,7 @@ class DashBoardView(GenericAPIView):
             Chart 
             
             '''
-            if chart_filter == "SelectRange":
+            if filter == "SelectRange":
                 # format = "%Y-%m-%d %H:%M:%S" # The format
                 format = "%Y-%m-%d" # The format
 

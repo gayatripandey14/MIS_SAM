@@ -12,6 +12,7 @@ from datetime import timedelta
 import datetime
 import pytz
 import time
+from .utils import get_routes
 
 
 class SmsLogSerializer(serializers.ModelSerializer):
@@ -88,7 +89,8 @@ class RouteAnalyticsSerializer(serializers.ModelSerializer):
 
     
     def get_smsc_dlr(self,obj):
-        print(obj.id)
+        request = self.context.get('request')
+
         smsc_obj = AccountsSmscroutes.objects.filter(smpp_smsc_id=obj.id)     
         user_dlr = [] 
         request = self.context.get('request')
@@ -99,12 +101,13 @@ class RouteAnalyticsSerializer(serializers.ModelSerializer):
         end = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=1)
         end_date = end.strftime("%Y-%m-%d")
         for route in smsc_obj:
-            smppuser = AccountsSmppusers.objects.filter(route=route.id)
+            smppuser = get_routes(request.user,route.id)
+            # smppuser = AccountsSmppusers.objects.filter(route=route.id)
             for user_detail in smppuser:
         
 
                 data = {}
-                username =  user_detail.smpp_userdetails_id
+                username =  user_detail['username']
                 data['username'] = username
                 dlr_count = sms_cdr_analytics(start_date,end_date,username) 
                 undelivered_count = 0
@@ -124,22 +127,6 @@ class RouteAnalyticsSerializer(serializers.ModelSerializer):
                     data['delivery_rate'] = round(delivered_count/(submission_count)*100,2)
                 user_dlr.append(data)
             
-                # print(dlr_count)
-                # data['username'] = username
-            
-                # if dlr_count:
-                #     print(dlr_count[0]['submission_count'])
-                #     data['undelivered_count'] = dlr_count[0]['undelivered_count']
-                #     data['delivered_count'] = dlr_count[0]['delivered_count']
-                #     data['submission_count'] = dlr_count[0]['submission_count']
-                
-            # user_detail = SmppUser.objects.filter(system_id=i.smpp_userdetails_id) 
-                #     data['pending'] =  data['submission_count'] - (data['undelivered_count']+data['delivered_count'])
-                #     if  data['submission_count']:
-                #         data['delivery_rate'] = round(data['delivered_count']/(data['submission_count'])*100,2)
-                    
-
-                # user_dlr.append(data)
             
         return user_dlr
            
