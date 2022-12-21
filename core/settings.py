@@ -133,10 +133,10 @@ DATABASES = {
 }
 
 # mongoengine.connect(db="sms", host="localhost")
-mongoengine.connect(db="sms",host="49.50.79.133",password="celetelsms123",username="root",authentication_source="admin")
+mongoengine.connect(db="sms",host="172.31.42.92",password="celetelsms123",username="root",authentication_source="admin")
 
 # MONGO_CLIENT = MongoClient("localhost")
-MONGO_CLIENT = MongoClient("mongodb://root:celetelsms123@49.50.79.133:27017/?authMechanism=DEFAULT")
+MONGO_CLIENT = MongoClient("mongodb://root:celetelsms123@172.31.42.92:27017/?authMechanism=DEFAULT")
 
 SMS_DB = MONGO_CLIENT.sms
 

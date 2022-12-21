@@ -32,7 +32,6 @@ class CustomerAnalyticsSerializer(serializers.ModelSerializer):
             smppuser = AccountsSmppusers.objects.filter(assigned_to=obj['id'])   
         else:  
             smppuser = AccountsSmppusers.objects.filter(assigned_to=obj.id)   
-
         user_dlr = [] 
         request = self.context.get('request')
         start_date = request.GET.get('start_date')
@@ -89,7 +88,8 @@ class RouteAnalyticsSerializer(serializers.ModelSerializer):
 
     
     def get_smsc_dlr(self,obj):
-        smppuser = AccountsSmppusers.objects.filter(assigned_to=obj.id)    
+        print(obj.id)
+        smsc_obj = AccountsSmscroutes.objects.filter(smpp_smsc_id=obj.id)     
         user_dlr = [] 
         request = self.context.get('request')
         start_date = request.GET.get('start_date')
@@ -98,27 +98,48 @@ class RouteAnalyticsSerializer(serializers.ModelSerializer):
         start_date = start.strftime("%Y-%m-%d")
         end = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=1)
         end_date = end.strftime("%Y-%m-%d")
-        for user in smppuser:
+        for route in smsc_obj:
+            smppuser = AccountsSmppusers.objects.filter(route=route.id)
+            for user_detail in smppuser:
+        
 
-            # user_detail = SmppUser.objects.filter(system_id=i.smpp_userdetails_id) 
-            data = {}
-            # for user in user_detail:  
-            username =  user.smpp_userdetails_id
-            dlr_count = sms_cdr_analytics(start_date,end_date,username) 
-            
-            data['username'] = username
-            
-            if dlr_count:
-                data['undelivered_count'] = dlr_count[0]['undelivered_count']
-                data['delivered_count'] = dlr_count[0]['delivered_count']
-                data['submission_count'] = dlr_count[0]['submission_count']
-            
-                data['pending'] =  data['submission_count'] - (data['undelivered_count']+data['delivered_count'])
+                data = {}
+                username =  user_detail.smpp_userdetails_id
+                data['username'] = username
+                dlr_count = sms_cdr_analytics(start_date,end_date,username) 
+                undelivered_count = 0
+                delivered_count = 0
+                submission_count = 0
+                if dlr_count:
+                    for dlr in dlr_count:
+                        undelivered_count= undelivered_count+dlr['undelivered_count']
+                        delivered_count = delivered_count+dlr['delivered_count']
+                        submission_count = submission_count+dlr['submission_count']
+
+                data['undelivered_count'] = undelivered_count
+                data['delivered_count'] = delivered_count
+                data['submission_count'] = submission_count
+                data['pending'] =  submission_count - (undelivered_count+delivered_count)
                 if  data['submission_count']:
-                    data['delivery_rate'] = round(data['delivered_count']/(data['submission_count'])*100,2)
+                    data['delivery_rate'] = round(delivered_count/(submission_count)*100,2)
+                user_dlr.append(data)
+            
+                # print(dlr_count)
+                # data['username'] = username
+            
+                # if dlr_count:
+                #     print(dlr_count[0]['submission_count'])
+                #     data['undelivered_count'] = dlr_count[0]['undelivered_count']
+                #     data['delivered_count'] = dlr_count[0]['delivered_count']
+                #     data['submission_count'] = dlr_count[0]['submission_count']
                 
+            # user_detail = SmppUser.objects.filter(system_id=i.smpp_userdetails_id) 
+                #     data['pending'] =  data['submission_count'] - (data['undelivered_count']+data['delivered_count'])
+                #     if  data['submission_count']:
+                #         data['delivery_rate'] = round(data['delivered_count']/(data['submission_count'])*100,2)
+                    
 
-            user_dlr.append(data)
+                # user_dlr.append(data)
             
         return user_dlr
            

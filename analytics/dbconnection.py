@@ -40,15 +40,17 @@ def fetch_sms_log_table(start_date,end_date):
 def sms_cdr_analytics(start_date,end_date,username):
     
     tables = fetch_sms_log_table(start_date,end_date)
-    print(tables)
+    # print(tables)
     rtn_data = []
     for data in tables:
         # query = f"SELECT (SELECT Count(*)  FROM {data['table_name']} WHERE account = '{username}' ) as submission_count,(SELECT COUNT(*)  FROM {data['table_name']} WHERE status = 'UNDELIV' AND account = '{username}') as undelivered_count,(SELECT COUNT(*)  FROM {data['table_name']} WHERE status = 'DELIVRD' AND account = '{username}') as delivered_count "
         cdr_data = f"SELECT COUNT(*) AS submission_count,COUNT(CASE WHEN status = 'UNDELIV' THEN 1 END) AS undelivered_count,COUNT(CASE WHEN status = 'DELIVRD' THEN 1 END) AS delivered_count FROM {data['table_name']} WHERE account = '{username}'"
         cdr_analytics = my_custom_sql(cdr_data)
-        
-        rtn_data.extend(cdr_analytics)  
+        # print(cdr_analytics)
+        rtn_data.extend(cdr_analytics) 
+    
     return rtn_data
+
 
 
 
