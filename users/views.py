@@ -292,10 +292,15 @@ class DashBoardView(GenericAPIView):
                 for i in all:
                     undelivered_count = undelivered_count+i['undelivered_count']
                     delivered_count = delivered_count+i['delivered_count']
-                
+                    submission_count = submission_count+i['submission_count']
+                if submission_count == 0:
+                    pass
+                successrate = delivered_count/submission_count * 100
                 count_dict = {"system_id":system_id,'route':route,
                             'undelivered_count':undelivered_count,
-                            'delivered_count':delivered_count}
+                            'delivered_count':delivered_count,
+                            'total':submission_count,
+                            'successrate':round(successrate,2)}
                
                 return Response(count_dict)
 
@@ -312,11 +317,15 @@ class DashBoardView(GenericAPIView):
                 for i in all:
                     undelivered_count = undelivered_count+i['undelivered_count']
                     delivered_count = delivered_count+i['delivered_count']
-                
+                    submission_count = submission_count+i['submission_count']
+                if submission_count == 0:
+                    pass
+                successrate = delivered_count/submission_count * 100
                 count_dict = {"system_id":system_id,'route':route,
                             'undelivered_count':undelivered_count,
-                            'delivered_count':delivered_count}
-                
+                            'delivered_count':delivered_count,
+                            'total':submission_count,
+                            'successrate':round(successrate,2)}
 
                 return Response(count_dict)   
 
@@ -327,16 +336,22 @@ class DashBoardView(GenericAPIView):
 
                 undelivered_count = 0
                 delivered_count = 0
+                submission_count = 0
 
                 all = fetch_dlr_count(start_date,end_date)
                 
                 for i in all:
                     undelivered_count = undelivered_count+i['undelivered_count']
                     delivered_count = delivered_count+i['delivered_count']
-                
+                    submission_count = submission_count+i['submission_count']
+                if submission_count == 0:
+                    pass
+                successrate = delivered_count/submission_count * 100
                 count_dict = {"system_id":system_id,'route':route,
                             'undelivered_count':undelivered_count,
-                            'delivered_count':delivered_count}
+                            'delivered_count':delivered_count,
+                            'total':submission_count,
+                            'successrate':round(successrate,2)}
                 
                 return Response(count_dict)    
         if query == 'AnalyticsData':
@@ -345,7 +360,6 @@ class DashBoardView(GenericAPIView):
                 days = int(chart_filter.replace('messages_days', ''))  
                 start_date = datetime.datetime.now() + datetime.timedelta(days=1)
                 end_date =datetime.datetime.now() - datetime.timedelta(days=days)
-                
                
                 rtrn = {}
                 for single_date in pd.date_range(end_date, start_date):

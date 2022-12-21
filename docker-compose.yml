@@ -1,0 +1,73 @@
+version: "3"
+
+services:
+      userdb:
+        image: postgres
+        container_name: "userdb.celetel.com"
+        environment:
+            - POSTGRES_DB=celetel
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=admin
+        #volumes:
+            #- /home/celetel/docker/volumes/postgres_volume:/data/db
+        networks:
+            - proxynet
+        restart: always
+
+      celetel_user_service:
+        build: ./userservice
+        restart: always
+        container_name: "user.celetel.com" #DNS name
+        networks:
+            - proxynet
+        stdin_open: true
+        environment:
+            - POSTGRES_NAME=celetel
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=admin
+        links:
+            - userdb
+        depends_on:
+            - userdb
+
+        tty: true  # docker run -t  # needed to enable debugging with pdb/ipdb
+        command: python manage.py runserver 0.0.0.0:8000
+        ports:
+            - 8001:8000 
+      db:
+        container_name: "misdb.celetel.com"
+        networks:
+            - proxynet
+
+        image: postgres
+        environment:
+            - POSTGRES_DB=celetelmissam
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=admin
+        #volumes:
+            #- pgdata:/var/lib/posgresql/data        
+        restart: always
+
+      mis_service:
+        build: .
+        container_name: "mis.celetel.com"
+        networks:
+            - proxynet
+        restart: always
+            # volumes:
+            #   - core:/core
+        stdin_open: true
+        links:
+            - userdb
+            - db
+        depends_on:
+            - userdb
+            - db
+        tty: true  # docker run -t  # needed to enable debugging with pdb/ipdb
+        command: python manage.py runserver 0.0.0.0:8000
+        ports:
+            - 8000:8000    
+
+            
+networks:
+  proxynet:            
