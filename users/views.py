@@ -274,6 +274,7 @@ class DashBoardView(GenericAPIView):
         
         system_id = SmppSmsc.objects.all().count()
         route = SmppUser.objects.all().count()
+        # users = AccountsUser.objects.filter(created_by = request.user).count()
         if query == 'DeliveryCount':
             if filter == "ThisDay":
                 start_date = datetime.datetime.now().strftime("%Y-%m-%d")
@@ -306,7 +307,7 @@ class DashBoardView(GenericAPIView):
                 
                 undelivered_count = 0
                 delivered_count = 0
-
+                submission_count = 0
                 all = fetch_dlr_count(start_date,end_date)
                 
                 for i in all:
@@ -355,18 +356,16 @@ class DashBoardView(GenericAPIView):
             if filter.startswith('messages_days'):
 
                 days = int(filter.replace('messages_days', ''))  
-                start_date = datetime.datetime.now() + datetime.timedelta(days=1)
+                start_date = datetime.datetime.now()
                 end_date =datetime.datetime.now() - datetime.timedelta(days=days)
-               
                 rtrn = {}
                 for single_date in pd.date_range(end_date, start_date):
                     rtrn[str(single_date.date())] = 0
-                    
                 campaign_analytics = fetch_chart_data(start_date,end_date)
                 for obj in campaign_analytics:
                     if obj['submit_time'] != None:
+                        # print(rtrn[ str(obj['submit_time']) ])
                         rtrn[ str(obj['submit_time']) ] = rtrn[ str(obj['submit_time']) ] + obj['delivered_count']
-            
                 rtrn_list = []
                 for i in list(rtrn):
                     rtrn_list.append( {
@@ -406,9 +405,7 @@ class DashBoardView(GenericAPIView):
             
             '''
             if filter == "SelectRange":
-                # format = "%Y-%m-%d %H:%M:%S" # The format
                 format = "%Y-%m-%d" # The format
-
                 Initial_date = datetime.datetime.strptime(Initial_date,format)
                 Final_date = datetime.datetime.strptime(Final_date,format)
 
@@ -420,28 +417,35 @@ class DashBoardView(GenericAPIView):
                     return {"error" : "invalid date range"}
 
             delta = Final_date.date() - Initial_date.date()
-            end_date = Initial_date.strftime("%Y-%m-%d")
-            start_date = Final_date.strftime("%Y-%m-%d")
-
+            
             rtrn = {}
             if delta.days < 365:
                 for single_date in pd.date_range(Initial_date, Final_date):
                     rtrn[single_date.date()] = 0
-                campaign_analytics = fetch_chart_data(start_date,end_date)
-                for obj in campaign_analytics:
-                    if obj['submit_time'] != None:
-                        rtrn[ obj['submit_time'] ] = rtrn[ obj['submit_time'] ] + obj['delivered_count']
+                campaign_analytics = fetch_chart_data(Final_date+datetime.timedelta(days=2),Initial_date+datetime.timedelta(days=1))
+
+                for obj in range(1,len(campaign_analytics)):
+                    if campaign_analytics[obj]['submit_time'] != None:
+                        rtrn[ campaign_analytics[obj]['submit_time'] ] = rtrn[ campaign_analytics[obj]['submit_time'] ] + campaign_analytics[obj]['delivered_count']
+                
+                # for obj in campaign_analytics:
+                #     print(f"_____________________submit_date{obj['submit_time']}")
+                #     if obj['submit_time'] != None:
+                #         rtrn[ obj['submit_time'] ] = rtrn[ obj['submit_time'] ] + obj['delivered_count']
                 
             else:
-                for single_date in pd.date_range(end_date, start_date, freq='MS'):
+                for single_date in pd.date_range(Initial_date, Final_date, freq='MS'):
                     rtrn[f"{single_date.date().strftime('%B')}-{single_date.date().year}"] = 0
+                '''
+                    To Fetch data from Mysql
+                '''
+                campaign_analytics = fetch_chart_data(Final_date,Initial_date)
 
-                campaign_analytics = fetch_chart_data(start_date,end_date)
-                
-                for obj in campaign_analytics:
-                    if obj['submit_time'] != None:
-                        month_yr = f"{obj['submit_time'].strftime('%B')}-{obj['submit_time'].year}"
-                        rtrn[ month_yr ] = rtrn[ month_yr ] + obj['delivered_count']
+                for obj in range(1,len(campaign_analytics)):
+                    if campaign_analytics[obj]['submit_time'] != None:
+                        month_yr = f"{campaign_analytics[obj]['submit_time'].strftime('%B')}-{campaign_analytics[obj]['submit_time'].year}"
+                        rtrn[ month_yr ] = rtrn[ month_yr ] + campaign_analytics[obj]['delivered_count']
+                        
             rtrn_list = []
             for i in list(rtrn):
                 rtrn_list.append( {
