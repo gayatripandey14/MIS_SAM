@@ -123,7 +123,6 @@ def welcome_email_send(email):
 def fetch_sms_cdr_table(start_date,end_date):
     sql = f"SELECT table_name FROM information_schema.tables WHERE TABLE_SCHEMA='kannel' AND table_name Like '%sms_cdr%' AND  date_format(create_time,'%Y-%m-%d %H:%M:%S') >= '{end_date}' AND date_format(create_time,'%Y-%m-%d %H:%M:%S') <= '{start_date}' "
     query = my_custom_sql(sql)  
-
     return query
 def fetch_dlr_count(start_date,end_date):
     
