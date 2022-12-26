@@ -188,3 +188,33 @@ class SmppUsersGetView(GenericAPIView):
 
 
 
+class SmppRouteListView(GenericAPIView):
+    permission_classes = (IsAuthenticated, IsAdminSuperAdminAgent, IsUserActive, )
+    serializer_class = RouteListSerializer
+    custom_param = [
+
+            openapi.Parameter(name='id',
+                              in_=openapi.IN_QUERY,
+                              type=openapi.TYPE_INTEGER,
+                              description='get by id',
+                              required=False),
+            openapi.Parameter(name='page',
+                              in_=openapi.IN_QUERY,
+                              type=openapi.TYPE_INTEGER,
+                              description='Page No.',
+                              required=False),
+           ]
+    @swagger_auto_schema(manual_parameters = custom_param)
+    def get(self,request):
+        print("\n\n")
+
+        id = request.GET.get("id")
+
+        if id:
+            route_objs = AccountsSmscroutes.objects.filter(id=id)
+        else:
+            route_objs = AccountsSmscroutes.objects.all()
+        serializer = self.serializer_class(route_objs,many=True)
+        return Response(serializer.data)
+
+            

@@ -30,8 +30,23 @@ class GetChildrensView(GenericAPIView):
     
     def get(self,request):
         user = request.user
-        children_obj = get_childrens(user)
-        return Response(children_obj)
+        if user.user_type == 'Super Admin':
+            
+            user_obj = SmppUser.objects.all()
+            rtrn = []
+
+            for username in user_obj:
+                data_dict = {}
+
+                username = username.system_id
+                data_dict["username"]=username
+                rtrn.append(data_dict)
+            return Response(rtrn)
+            
+
+        else:          
+            children_obj = get_childrens(user)
+            return Response(children_obj)
 
 
 
@@ -40,8 +55,23 @@ class GetChildrensUnderMeView(GenericAPIView):
     
     def get(self,request):
         user = request.user
-        children_obj = get_childrens_under_user(user)
-        return Response(children_obj)        
+         
+        if user.user_type == 'Super Admin':
+            
+            user_obj = AccountsUser.objects.all()
+            rtrn = []
+
+            for user in user_obj:
+                data_dict = {}
+
+                
+                data_dict["id"]=user.id
+                data_dict["email"]=user.email
+                rtrn.append(data_dict)
+            return Response(rtrn)
+        else:    
+            children_obj = get_childrens_under_user(user)
+            return Response(children_obj)        
 
 
 class SmsLogView(GenericAPIView):
@@ -128,14 +158,26 @@ class CustomerAnalyticsView(GenericAPIView):
 
             return Response(serializer.data)
         else:
-            # account_user = AccountsUser.objects.all() 
-            account_user = get_childrens_under_user(request.user)
+            if request.user.user_type == "Super Admin":
+                account_user = AccountsUser.objects.all() 
+                serializer = self.serializer_class(account_user,many=True,context={'request':request})
+                count = len(account_user)
+
+                # pagination = CustomPagination()
+                # paginatedqs = pagination.paginate_queryset(serializer.data, request)
+                # return pagination.get_paginated_response(paginatedqs,
+                #                                     count)
+   
+            else:    
+                account_user = get_childrens_under_user(request.user)
+                count = len(account_user)
+
             serializer = self.serializer_class(account_user,many=True,context={'request':request})
 
             pagination = CustomPagination()
             paginatedqs = pagination.paginate_queryset(serializer.data, request)
             return pagination.get_paginated_response(paginatedqs,
-                                                    account_user.count(account_user))
+                                                count)
    
 
 

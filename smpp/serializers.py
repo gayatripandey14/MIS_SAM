@@ -96,7 +96,7 @@ class SmppUsersGetSerializer(serializers.ModelSerializer):
         
     class Meta:
         model = SmppUsers
-        fields = ("id","route","details",)
+        fields = ("id","route",'sale_price',"details")
 
 
 class SmppUsersSerializer(serializers.ModelSerializer):
@@ -167,8 +167,27 @@ class SmppUsersSerializer(serializers.ModelSerializer):
 
         return validated_data
 
-
-class WordReplaceSerializer(serializers.ModelSerializer):
+class SmscSerializer(serializers.ModelSerializer):
     class Meta:
-        model = WordReplace     
-        fields = ['id','word','replace_with','status']           
+        model = SmppSmsc
+        fields = ['id','smsc_id']
+
+class RouteListSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+    details = serializers.SerializerMethodField()
+
+    def get_user(self,obj):
+        return User.objects.get(id=obj.user).email
+
+    def get_details(self,obj):
+        smpp_obj = SmppSmsc.objects.filter(id=obj.smpp_smsc_id)
+        serailizer = SmscSerializer(instance=smpp_obj,many=True)
+        return serailizer.data
+
+    class Meta:
+        model = SmppSmscRoutes
+        fields = ("id","user","details")
+
+
+
+

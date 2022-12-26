@@ -90,10 +90,8 @@ class RouteAnalyticsSerializer(serializers.ModelSerializer):
     
     def get_smsc_dlr(self,obj):
         request = self.context.get('request')
-
         smsc_obj = AccountsSmscroutes.objects.filter(smpp_smsc_id=obj.id)     
         user_dlr = [] 
-        request = self.context.get('request')
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
         start = datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(days=1)
@@ -101,13 +99,13 @@ class RouteAnalyticsSerializer(serializers.ModelSerializer):
         end = datetime.datetime.strptime(end_date, '%Y-%m-%d') + datetime.timedelta(days=1)
         end_date = end.strftime("%Y-%m-%d")
         for route in smsc_obj:
-            smppuser = get_routes(request.user,route.id)
-            # smppuser = AccountsSmppusers.objects.filter(route=route.id)
+            if request.user.user_type == 'Super Admin':smppuser = AccountsSmppusers.objects.filter(route=route.id)
+            else:  smppuser = get_routes(request.user,route.id)
             for user_detail in smppuser:
-        
 
                 data = {}
-                username =  user_detail['username']
+                if request.user.user_type == 'Super Admin': username =  user_detail.smpp_userdetails_id
+                else:username =  user_detail['username']
                 data['username'] = username
                 dlr_count = sms_cdr_analytics(start_date,end_date,username) 
                 undelivered_count = 0

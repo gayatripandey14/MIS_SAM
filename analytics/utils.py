@@ -14,7 +14,6 @@ def get_routes(user,route, count=1):
     rtrn_routes = []
 
     for i, child in enumerate(children):
-        
 
         # print(f"{space}{i} --> gettings routes for child [{child.email} {child.id} {child.user_type}]", end='-               \t')
         routes = AccountsSmppusers.objects.filter(assigned_to = child.id,route=route,delete=False)
@@ -23,6 +22,6 @@ def get_routes(user,route, count=1):
             username = SmppUser.objects.get(system_id=x.smpp_userdetails_id).system_id
             usernames.append({"username":username})
         rtrn_routes.extend(usernames)
-        rtrn_routes.extend(get_routes(child, count+5))
+        rtrn_routes.extend(get_routes(child,route, count+5))
     
     return rtrn_routes

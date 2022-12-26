@@ -4,6 +4,7 @@ from .views import   *
 
 urlpatterns = [
     path("route/",RouteCreateView.as_view()),
+    path("route-list/",SmppRouteListView.as_view()),
     path("smppusers/",SmppUsersGetView.as_view()),
 
 ]
