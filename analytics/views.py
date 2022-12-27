@@ -32,13 +32,13 @@ class GetChildrensView(GenericAPIView):
         user = request.user
         if user.user_type == 'Super Admin':
             
-            user_obj = AccountsSmppusers.objects.all()
+            user_obj = SmppUser.objects.all()
             rtrn = []
 
             for username in user_obj:
                 data_dict = {}
 
-                username = username.smpp_userdetails_id
+                username = username.system_id
                 data_dict["username"]=username
                 rtrn.append(data_dict)
             return Response(rtrn)
