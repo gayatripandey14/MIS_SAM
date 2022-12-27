@@ -147,6 +147,50 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 
+class GetUserSerializer(serializers.ModelSerializer):
+
+    company_name = serializers.SerializerMethodField()
+    financial_data = serializers.SerializerMethodField()
+    other_data = serializers.SerializerMethodField()
+    date_joined = serializers.SerializerMethodField()
+    def get_company_name(self,obj):
+        if obj.company_detail:
+            return obj.company_detail.company_name
+    def get_financial_data(self,obj):
+        if obj.financial_detail:
+            return {"currency":obj.financial_detail.currency,"credit_limit":obj.financial_detail.credit_limit}  
+
+    def get_other_data(self,obj):
+        if obj.other_detail:
+            return {"status":obj.other_detail.status,"agent_name":obj.other_detail.agent_name}     
+    def get_date_joined(self,obj):
+        return obj.date_joined.strftime("%Y-%m-%d")            
+    # def get_ccredit_limit(self,obj):
+    #     if obj.financial_detail:
+    #         return obj.financial_detail.currency            
+
+    class Meta:
+        model = User 
+        exclude = ('password','phone_number','support_no','first_name','last_name','address','web_url','creation_id','otp','created_by','last_login','is_active','is_superuser','is_staff','otp_verified','company_detail','financial_detail','other_detail')
+class GetnoUserSerializer(serializers.ModelSerializer):
+    company_name = serializers.SerializerMethodField()
+    financial_data = serializers.SerializerMethodField()
+    other_data = serializers.SerializerMethodField()
+    # date_joined = serializers.SerializerMethodField()
+    def get_company_name(self,obj):
+        if obj["company_detail"]:
+            return obj["company_detail"].company_name
+    def get_financial_data(self,obj):
+        if obj["financial_detail"]:
+            return {"currency":obj["financial_detail"].currency,"credit_limit":obj["financial_detail"].credit_limit}  
+
+    def get_other_data(self,obj):
+        if obj['other_detail']:
+            return {"status":obj['other_detail'].status,"agent_name":obj['other_detail'].agent_name}     
+       
+    class Meta:
+        model = User 
+        exclude = ('password','phone_number','support_no','first_name','last_name','address','web_url','creation_id','otp','created_by','last_login','is_active','is_superuser','is_staff','otp_verified')
 
 
 class CustomerUpdateSerializer(serializers.ModelSerializer):

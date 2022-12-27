@@ -17,6 +17,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from analytics.dbconnection import my_custom_sql
 import datetime
+from .models import AccountsUser
 GOOGLE_ID_TOKEN_INFO_URL = 'https://www.googleapis.com/oauth2/v3/tokeninfo'
 
 def google_validate_id_token(*, id_token: str) -> bool:
@@ -119,6 +120,21 @@ def welcome_email_send(email):
 
     
  #Here the code of welcome mail is finished
+def get_children_under_me(user, count=1):
+    space = ' ' * count
+
+    
+    children = AccountsUser.objects.filter(created_by = user,is_active=True)
+    if children: print(f"{space}found {len(children)} children for this user {user.user_type}")
+
+    rtrn_routes = []
+    for i, child in enumerate(children):
+        date_joined = child.date_joined.strftime("%Y-%m-%d")
+        rtrn_routes.append({'id':child.id,'email':child.email,'user_type':child.user_type,'creation_type':child.creation_type,"date_joined":date_joined,"company_detail":child.company_detail,"financial_detail":child.financial_detail,"other_detail":child.other_detail})
+        rtrn_routes.extend(get_children_under_me(child, count+5))
+
+    return rtrn_routes   
+
 
 def fetch_sms_cdr_table(start_date,end_date):
     sql = f"SELECT table_name FROM information_schema.tables WHERE TABLE_SCHEMA='kannel' AND table_name Like '%sms_cdr%' AND  date_format(create_time,'%Y-%m-%d %H:%M:%S') >= '{end_date}' AND date_format(create_time,'%Y-%m-%d %H:%M:%S') <= '{start_date}' "
