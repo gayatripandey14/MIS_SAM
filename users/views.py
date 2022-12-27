@@ -18,6 +18,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework_simplejwt.tokens import RefreshToken
 import datetime
 import pandas as pd
+from .utils import get_children_under_me
 # from accounts.utils import *
 
 # Create your views here.
@@ -59,52 +60,65 @@ class CustomerCreateView(GenericAPIView):
 
 
     def get(self,request):
-        print(request.user)
         if self.request.user.user_type=="Super Admin":
             users = User.objects.filter(is_active=True)
-        if self.request.user.user_type=="Admin":
-            users = User.objects.filter(created_by=request.user,is_active=True)
-            # user = User.objects.filter(Q(created_by=request.user) | Q(user_type="Agent") | Q(user_type="User") | Q(user_type="Reseller"),is_active=True)
-            # user = User.objects.filter(Q(created_by=request.user) | Q(user_type="Agent"),is_active=True)
+            pagination = CustomPagination()
+            paginatedqs = pagination.paginate_queryset(users, request)
+            serializer = GetUserSerializer(paginatedqs, many=True)
+            return pagination.get_paginated_response(serializer.data,
+                                                    users.count())
+        else:
+            users = get_children_under_me(request.user)
+            count = len(users)
+            pagination = CustomPagination()
+            paginatedqs = pagination.paginate_queryset(users, request)
+            serializer = GetnoUserSerializer(paginatedqs, many=True)
+            return pagination.get_paginated_response(serializer.data,
+                                                    count)
+        
+        # if self.request.user.user_type=="Admin":
+        #     users = User.objects.filter(created_by=request.user,is_active=True)
+        #     # user = User.objects.filter(Q(created_by=request.user) | Q(user_type="Agent") | Q(user_type="User") | Q(user_type="Reseller"),is_active=True)
+        #     # user = User.objects.filter(Q(created_by=request.user) | Q(user_type="Agent"),is_active=True)
             
-            # ids_list = []
-            # user_obj_list = []
+        #     # ids_list = []
+        #     # user_obj_list = []
 
-            # for i in user:
-            #     ids_list.append(i.id)
-            #     user_obj_list.append(i)
+        #     # for i in user:
+        #     #     ids_list.append(i.id)
+        #     #     user_obj_list.append(i)
 
-            # users = User.objects.filter(Q(id__in=ids_list) | Q(created_by__in = user_obj_list),is_active=True)
+        #     # users = User.objects.filter(Q(id__in=ids_list) | Q(created_by__in = user_obj_list),is_active=True)
 
-        if self.request.user.user_type=="Agent":
-            users = User.objects.filter(Q(user_type="User") | Q(user_type="Reseller"),created_by=request.user,is_active=True)
+        # if self.request.user.user_type=="Agent":
+        #     users = User.objects.filter(Q(user_type="User") | Q(user_type="Reseller"),created_by=request.user,is_active=True)
 
-        print("\n\n")
-        print(users)
-        print("\n\n")
+        # print("\n\n")
+        # print(users)
+        # print("\n\n")
 
-        user_data = []
-        for user in users:
-            print(user)
-            user_dict={}
-            user_dict['email'] = user.email
-            user_dict['user_id'] = user.id
-            user_dict['created_by'] = user.created_by.id
-            user_dict['creation_time'] = user.date_joined
-            user_dict['currency'] = user.financial_detail.currency
-            user_dict['credit_limit'] = user.financial_detail.credit_limit
-            user_dict['company_name'] = user.company_detail.company_name
-            user_dict['agent_name'] = user.other_detail.agent_name
-            user_dict['status'] = user.other_detail.status
-
-
+        # user_data = []
+        # for user in users:
+        #     print(user)
+        #     user_dict={}
+        #     user_dict['email'] = user.email
+        #     user_dict['user_id'] = user.id
+        #     user_dict['created_by'] = user.created_by.id
+        #     user_dict['creation_time'] = user.date_joined
+        #     user_dict['currency'] = user.financial_detail.currency
+        #     user_dict['credit_limit'] = user.financial_detail.credit_limit
+        #     user_dict['company_name'] = user.company_detail.company_name
+        #     user_dict['agent_name'] = user.other_detail.agent_name
+        #     user_dict['status'] = user.other_detail.status
 
 
-            user_data.append(user_dict)
-        pagination = CustomPagination()
-        paginatedqs = pagination.paginate_queryset(user_data, request)
-        # serializer = UserSerializer(paginatedqs, many=True)
-        return pagination.get_paginated_response(paginatedqs,users.count())
+
+
+        #     user_data.append(user_dict)
+        # pagination = CustomPagination()
+        # paginatedqs = pagination.paginate_queryset(user_data, request)
+        # # serializer = UserSerializer(paginatedqs, many=True)
+        # return pagination.get_paginated_response(paginatedqs,users.count())
                        
 
     
