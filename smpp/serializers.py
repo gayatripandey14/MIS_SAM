@@ -75,6 +75,53 @@ class RouteSerializer(serializers.ModelSerializer):
 
         return validated_data
     
+class SmscRouteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SmppSmscRoutes
+        fields = '__all__'
+class SmppSmscSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+    details = SmscRouteSerializer()
+    class Meta:
+        model = SmppSmsc
+        fields = '__all__'
+        # exclude = ("user","smpp_smsc_id","delete")
+
+    def validate(self, attrs):
+        """
+        some validations
+        """
+        return super().validate(attrs)
+
+    @atomic
+    def update(self, instance, validated_data):
+        smpp_data = validated_data.pop('details')
+        smpp_instance = SmppSmsc.objects.get(id=instance.smpp_smsc_id)
+        smpp_obj_serializer = SmppSmscSerializer(instance=smpp_instance,data=smpp_data)
+        smpp_obj_serializer.is_valid(raise_exception=True)
+        smpp_obj_serializer.save()
+        SmppSmscRoutes.objects.filter(id=instance.id).update(**validated_data)
+        validated_data['details'] = smpp_data
+        validated_data['id'] = instance.id
+        return validated_data
+
+    @atomic
+    def create(self, validated_data):
+
+        """
+        needs to be atomic for data consistency
+        """
+
+        smpp_data = validated_data.pop('details')
+        smpp_obj_serializer = SmppSmscSerializer(data=smpp_data)
+        smpp_obj_serializer.is_valid(raise_exception=True)
+        smpp_obj = smpp_obj_serializer.save()
+        obj = SmppSmscRoutes.objects.create(user=self.context['request'].user.id,smpp_smsc_id=smpp_obj.id,**validated_data)
+        validated_data['details'] = smpp_data
+        validated_data['id'] = obj.id
+
+        return validated_data
+
 
 class SmppUserSerializer(serializers.ModelSerializer):
 

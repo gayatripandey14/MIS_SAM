@@ -16,9 +16,65 @@ from testapp.models import  AccountsSmppusers,AccountsSmscroutes
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+# class RouteCreateView(GenericAPIView):
+#     permission_classes = (IsAuthenticated, IsAdminSuperAdminAgent, IsUserActive, )
+#     serializer_class = RouteSerializer
+
+#     def post(self, request):
+
+#         serializer = self.serializer_class(data=request.data,context={'request': request})
+#         serializer.is_valid(raise_exception=True)
+#         data = serializer.save()
+#         return Response(data,status=status.HTTP_202_ACCEPTED)
+
+#     custom_param = [
+
+#             openapi.Parameter(name='id',
+#                               in_=openapi.IN_QUERY,
+#                               type=openapi.TYPE_INTEGER,
+#                               description='get by id',
+#                               required=False),
+#             openapi.Parameter(name='page',
+#                               in_=openapi.IN_QUERY,
+#                               type=openapi.TYPE_INTEGER,
+#                               description='Page No.',
+#                               required=False),
+#            ]
+#     @swagger_auto_schema(manual_parameters = custom_param)
+#     def get(self,request):
+#         print("\n\n")
+
+#         id = request.GET.get("id")
+
+#         if id:
+#             route_objs = AccountsSmscroutes.objects.filter(id=id)
+#             print(route_objs)
+#             count = route_objs.count()
+#         else:
+#             route_objs = get_master_routes(request.user)
+#             route_objs.extend( get_children_routes(request.user) )
+#             count = len(route_objs)
+
+
+#         print("\n\n")
+#         pagination = CustomPagination()
+#         paginatedqs = pagination.paginate_queryset(route_objs, request)
+#         serializer = RouteGetSerializer(paginatedqs, many=True)
+#         return pagination.get_paginated_response(serializer.data,
+#                                                  count)
+    
+#     def put(self,request):
+#         id = request.data['id']
+#         instance = AccountsSmscroutes.objects.filter(id=id,user=request.user.id,delete=False).first()
+#         if instance is None:return Response(validation_error("you can't update this route"),status=400)
+#         serializer = self.serializer_class(instance=instance,data=request.data,context={'request': request})
+#         serializer.is_valid(raise_exception=True)
+#         data = serializer.save()
+#         return Response(data,status=status.HTTP_202_ACCEPTED)
+
 class RouteCreateView(GenericAPIView):
     permission_classes = (IsAuthenticated, IsAdminSuperAdminAgent, IsUserActive, )
-    serializer_class = RouteSerializer
+    serializer_class = SmppSmscSerializer
 
     def post(self, request):
 
