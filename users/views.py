@@ -19,6 +19,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import datetime
 import pandas as pd
 from .utils import get_children_under_me
+from smsroutes.utils import get_childrens_under_user
+
 # from accounts.utils import *
 
 # Create your views here.
@@ -288,6 +290,7 @@ class DashBoardView(GenericAPIView):
         
         system_id = SmppSmsc.objects.all().count()
         route = SmppUser.objects.all().count()
+        total_user = len(get_childrens_under_user(request.user))
         # users = AccountsUser.objects.filter(created_by = request.user).count()
         if query == 'DeliveryCount':
             if filter == "ThisDay":
@@ -306,7 +309,7 @@ class DashBoardView(GenericAPIView):
                     successrate = 0
                 else:
                     successrate = delivered_count/submission_count * 100
-                count_dict = {"system_id":system_id,'route':route,
+                count_dict = {"system_id":system_id,'route':route,'total_user':total_user,
                             'undelivered_count':undelivered_count,
                             'delivered_count':delivered_count,
                             'total':submission_count,

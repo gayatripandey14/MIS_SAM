@@ -104,7 +104,6 @@ class RouteCreateView(GenericAPIView):
 
         if id:
             route_objs = AccountsSmscroutes.objects.filter(id=id)
-            print(route_objs)
             count = route_objs.count()
         else:
             route_objs = get_master_routes(request.user)
@@ -170,7 +169,6 @@ class SmppUsersGetView(GenericAPIView):
         user = int(request.GET.get('user'))
         id = request.GET.get('id')
         user_obj = User.objects.filter(id=user).first()
-        print(user_obj)
         if user_obj is None:
             return Response({'error':'does not exist'}, status=404)
         if id:route_obj = SmppUsers.objects.filter(id=id,assigned_to=user_obj.id,delete=False).order_by("-id")

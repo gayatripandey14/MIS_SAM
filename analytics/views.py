@@ -83,6 +83,10 @@ class SmsLogView(GenericAPIView):
                               type=openapi.TYPE_INTEGER,
                               default=1,
                               required=False),
+            openapi.Parameter(name='filter',
+                              in_=openapi.IN_QUERY,
+                              type=openapi.TYPE_STRING,
+                              required=False),                  
             openapi.Parameter(name='start_date',
                               in_=openapi.IN_QUERY,
                               type=openapi.TYPE_STRING,
@@ -105,6 +109,8 @@ class SmsLogView(GenericAPIView):
         page = request.GET.get("page")
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
+        filter = request.GET.get("filter")
+
         if start_date!=None and end_date!=None:
             
             start = datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(days=1)
@@ -113,7 +119,7 @@ class SmsLogView(GenericAPIView):
             end_date = end.strftime("%Y-%m-%d")
         username = request.GET.get("username")
         
-        all = fetch_smslog_data(start_date,end_date,username,page)
+        all = fetch_smslog_data(start_date,end_date,username,filter,page)
         # serializer = self.serializer_class(all,many=True)
 
         # pagination = CustomPagination()

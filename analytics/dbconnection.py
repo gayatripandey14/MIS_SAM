@@ -56,7 +56,7 @@ def sms_cdr_analytics(start_date,end_date,username):
 
 
 
-def fetch_smslog_data(start_date,end_date,username,page):
+def fetch_smslog_data(start_date,end_date,username,filter,page):
     page_no = int(page)
     limit = 10 
     offset = (page_no-1) * limit
@@ -69,19 +69,24 @@ def fetch_smslog_data(start_date,end_date,username,page):
         query = "select * from ( "
 
         for i,data in enumerate(tables):
-            
-            innerQuery = f"SELECT * FROM {data['table_name']}  WHERE account= '{username}'"
+            if filter!=None:
+                innerQuery = f"SELECT * FROM {data['table_name']}  WHERE receiver LIKE '%{filter}%' AND account= '{username}'"
+            else:
+                innerQuery = f"SELECT * FROM {data['table_name']}  WHERE account= '{username}'"
             
             if i == len(tables) -1:
                 query = query + innerQuery
             else: 
                 query = query + innerQuery + " UNION ALL "
 
-        query = f"{query} ) as finaldata order by sql_id LIMIT {offset},{limit} " 
+        query = f"{query} ) as finaldata order by sql_id DESC LIMIT {offset},{limit} " 
         total_data = my_custom_sql(query)
 
         return total_data                                   
     else:
-        query = f"SELECT * FROM sms_cdr  LIMIT {offset},{limit} "
+        if filter!=None:
+            query = f"SELECT * FROM sms_cdr WHERE receiver LIKE '%{filter}%' order by sql_id DESC LIMIT {offset},{limit} "
+        else:
+            query = f"SELECT * FROM sms_cdr order by sql_id DESC LIMIT {offset},{limit} "
         q = my_custom_sql(query)   
         return q        
